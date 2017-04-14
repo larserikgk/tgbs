@@ -33,8 +33,8 @@ class BadgeImageGenerator:
         return template
 
     def _transpose_crew_info(self, base_image, crew_info):
-        font = ImageFont.truetype('fonts/DroidSans.ttf', 26)
-        font_bold = ImageFont.truetype('fonts/DroidSans-Bold.ttf', 50)
+        font = ImageFont.truetype('resources/fonts/DroidSans.ttf', 26)
+        font_bold = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 50)
         text_addition = ImageDraw.Draw(base_image)
         text_addition.text((412, 344), crew_info.id, font=font, fill=0)
         text_addition.text((412, 384), crew_info.name, font=font, fill=0)
