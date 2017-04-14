@@ -1,14 +1,15 @@
-from PIL import Image, ImageFont, ImageDraw, ImageOps
+from PIL import Image, ImageFont, ImageDraw
 from .models import *
 
 
 class BadgeImageGenerator:
 
-    def generate_badge(self, badge_type, ribbon_color, crew_info, photo=None, text=None):
+    def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None):
         # Generate crew badge
         if badge_type is BadgeType.Crew:
             if crew_info is not None and photo is not None:
                 return self.generate_crew_badge(ribbon_color, crew_info, photo)
+        # Generate blank badge
         if badge_type is BadgeType.Blank:
             if text is not None:
                 return self.generate_blank_badge(ribbon_color, text)
@@ -33,19 +34,25 @@ class BadgeImageGenerator:
         template.paste(ribbon_image, ribbon_image)
 
         text_addition = ImageDraw.Draw(template)
-        text_addition.text((412, 500), text, font=font)
+        text_addition.text((self._center_text(template, font, text), 500), text, font=font)
 
         return template
+
+    def _center_text(self, image, font, text):
+        base_w, base_h = image.size
+        text_w, text_h = font.getsize(text)
+        return (base_w - text_w)/2
 
     def _transpose_crew_info(self, base_image, crew_info):
         font = ImageFont.truetype('resources/fonts/DroidSans.ttf', 26)
         font_bold = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 50)
         text_addition = ImageDraw.Draw(base_image)
+
         text_addition.text((412, 344), crew_info.id, font=font, fill=0)
         text_addition.text((412, 384), crew_info.name, font=font, fill=0)
         text_addition.text((412, 424), crew_info.nick, font=font, fill=0)
         text_addition.text((412, 464), crew_info.position, font=font, fill=0)
-        text_addition.text((360, 554), crew_info.crew, font=font_bold)
+        text_addition.text((self._center_text(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
         if badge_type is BadgeType.Crew:
