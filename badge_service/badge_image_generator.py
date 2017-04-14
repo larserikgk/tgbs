@@ -8,7 +8,7 @@ class BadgeImageGenerator:
     def __init__(self, config):
         self._config = config
 
-    def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None):
+    def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None, number=None):
 
         # Generate crew badge
         if badge_type is BadgeType.Crew:
@@ -18,7 +18,12 @@ class BadgeImageGenerator:
         # Generate blank badge
         if badge_type is BadgeType.Blank:
             if text:
-                return self.generate_blank_badge(ribbon_color, text)
+                return self.generate_blank_badge(ribbon_color, text, number)
+
+        # Generate blank badge with 'Invited By'
+        if badge_type is BadgeType.Invitation:
+            if text:
+                return self.generate_blank_badge(ribbon_color, text, number, True)
 
     def generate_crew_badge(self, ribbon_color, crew_info, photo):
         template = Image.open(self._config['crew_template']).convert("RGBA")
@@ -33,15 +38,24 @@ class BadgeImageGenerator:
 
         return template
 
-    def generate_blank_badge(self, ribbon_color, text, number):
+    def generate_blank_badge(self, ribbon_color, text, number, invited_by=False):
         template = Image.open(self._config['other_template']).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
-        font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
+        invite_font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 40)
+        text_font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
         template.paste(ribbon_image, ribbon_image)
 
         text_addition = ImageDraw.Draw(template)
-        text_addition.text((self._center_text_coord(template, font, text), 500), text, font=font)
-        text_addition.text((20, 20), '#' + str(number), font=font, fill=0)
+
+        if not invited_by:
+            text_addition.text((self._center_text_coord(template, text_font, text), 500), text, font=text_font)
+        else:
+            text_addition.text((self._center_text_coord(template, invite_font, 'INVITED BY'), 450), 'INVITED BY',
+                               font=invite_font)
+            text_addition.text((self._center_text_coord(template, text_font, text), 500), text, font=text_font)
+
+        if number:
+            text_addition.text((20, 20), '#' + str(number), font=text_font, fill=0)
 
         return template
 
