@@ -33,7 +33,7 @@ class BadgeImageGenerator:
 
         return template
 
-    def generate_blank_badge(self, ribbon_color, text):
+    def generate_blank_badge(self, ribbon_color, text, number):
         template = Image.open(self._config['other_template']).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
         font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
@@ -41,7 +41,7 @@ class BadgeImageGenerator:
 
         text_addition = ImageDraw.Draw(template)
         text_addition.text((self._center_text_coord(template, font, text), 500), text, font=font)
-        text_addition.text((20, 20), "#", font=font)
+        text_addition.text((20, 20), '#' + str(number), font=font, fill=0)
 
         return template
 
@@ -60,7 +60,7 @@ class BadgeImageGenerator:
         text_addition.text((412, 424), crew_info.nick, font=font, fill=0)
         text_addition.text((412, 464), crew_info.position, font=font, fill=0)
         text_addition.text(
-            (self._center_text_coord(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
+            (self._center_text_coord(base_image, font_bold, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
         crew_rib, other_rib = self._config['crew_ribbon_folder'], self._config['other_ribbon_folder']
