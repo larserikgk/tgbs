@@ -5,6 +5,10 @@ from os import listdir
 
 
 class BadgeImageGenerator:
+
+    def __init__(self, config):
+        self._config = config
+
     def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None):
 
         # Generate crew badge
@@ -60,8 +64,7 @@ class BadgeImageGenerator:
             (self._center_text_coord(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
-        base_path = "resources"
-        ribbons_folder, badge_folder = op.join(base_path, "crewtemplates/ribbons"), op.join(base_path, "templates/ribbons")
+        ribbons_folder, badge_folder = self._config['crew_ribbon_folder'], self._config['other_ribbon_folder']
         crew_ribbons = [op.join(ribbons_folder, f) for f in listdir(ribbons_folder)
                                                     if op.isfile(op.join(ribbons_folder, f))]
         other_ribbons = [op.join(badge_folder, f) for f in listdir(badge_folder)
