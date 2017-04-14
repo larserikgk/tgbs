@@ -9,13 +9,6 @@ class CrewBadgeInfo:
         self.position = info_json['position']
         self.crew = info_json['crew']
 
-
-class BadgeRibbonColor(Enum):
-    Black = auto()
-    Blue = auto()
-    Red = auto()
-
-
 class BadgeType(Enum):
     Crew = auto()
     Blank = auto()
