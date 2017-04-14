@@ -5,7 +5,6 @@ from os import listdir
 
 
 class BadgeImageGenerator:
-
     def __init__(self, config):
         self._config = config
 
@@ -13,16 +12,16 @@ class BadgeImageGenerator:
 
         # Generate crew badge
         if badge_type is BadgeType.Crew:
-            if crew_info is not None and photo is not None:
+            if crew_info and photo:
                 return self.generate_crew_badge(ribbon_color, crew_info, photo)
 
         # Generate blank badge
         if badge_type is BadgeType.Blank:
-            if text is not None:
+            if text:
                 return self.generate_blank_badge(ribbon_color, text)
 
     def generate_crew_badge(self, ribbon_color, crew_info, photo):
-        template = Image.open('resources/crewtemplates/layer_background.png').convert("RGBA")
+        template = Image.open(self._config['crew_template']).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Crew, ribbon_color)
 
         template.paste(ribbon_image, ribbon_image)
@@ -35,7 +34,7 @@ class BadgeImageGenerator:
         return template
 
     def generate_blank_badge(self, ribbon_color, text):
-        template = Image.open('resources/templates/blankbadge_template.png').convert("RGBA")
+        template = Image.open(self._config['other_template']).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
         font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
         template.paste(ribbon_image, ribbon_image)
@@ -64,11 +63,9 @@ class BadgeImageGenerator:
             (self._center_text_coord(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
-        ribbons_folder, badge_folder = self._config['crew_ribbon_folder'], self._config['other_ribbon_folder']
-        crew_ribbons = [op.join(ribbons_folder, f) for f in listdir(ribbons_folder)
-                                                    if op.isfile(op.join(ribbons_folder, f))]
-        other_ribbons = [op.join(badge_folder, f) for f in listdir(badge_folder)
-                                                    if op.isfile(op.join(badge_folder, f))]
+        crew_rib, other_rib = self._config['crew_ribbon_folder'], self._config['other_ribbon_folder']
+        crew_ribbons = [op.join(crew_rib, f) for f in listdir(crew_rib) if op.isfile(op.join(crew_rib, f))]
+        other_ribbons = [op.join(other_rib, f) for f in listdir(other_rib) if op.isfile(op.join(other_rib, f))]
 
         if badge_type is BadgeType.Crew and ribbon_color:
             for ribbon in crew_ribbons:
