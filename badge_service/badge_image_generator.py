@@ -1,5 +1,5 @@
 from PIL import Image, ImageFont, ImageDraw
-from .models import *
+from .models import BadgeType
 from os import path as op
 from os import listdir
 
@@ -15,15 +15,14 @@ class BadgeImageGenerator:
             if crew_info and photo:
                 return self.generate_crew_badge(ribbon_color, crew_info, photo)
 
-        # Generate blank badge
-        if badge_type is BadgeType.Blank:
-            if text:
-                return self.generate_blank_badge(ribbon_color, text, number)
-
-        # Generate blank badge with 'Invited By'
-        if badge_type is BadgeType.Invitation:
-            if text:
-                return self.generate_blank_badge(ribbon_color, text, number, True)
+    def generate_other_badges(self, ribbon_color, text=None, start=None, stop=None, invited=False):
+        if not (start and stop):
+            return self._generate_blank_badge(ribbon_color, text, None, invited)
+        else:
+            results = []
+            for value in range(start, stop+1):
+                results.append(self._generate_blank_badge(ribbon_color, text, value, invited))
+            return results
 
     def generate_crew_badge(self, ribbon_color, crew_info, photo):
         template = Image.open(self._config['crew_template']).convert("RGBA")
@@ -38,7 +37,7 @@ class BadgeImageGenerator:
 
         return template
 
-    def generate_blank_badge(self, ribbon_color, text, number, invited_by=False):
+    def _generate_blank_badge(self, ribbon_color, text, number, invited_by=False):
         template = Image.open(self._config['other_template']).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
         invite_font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 40)

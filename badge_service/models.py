@@ -9,6 +9,7 @@ class CrewBadgeInfo:
         self.position = info_json['position']
         self.crew = info_json['crew']
 
+
 class BadgeType(Enum):
     Crew = auto()
     Blank = auto()
