@@ -1,14 +1,17 @@
 from PIL import Image, ImageFont, ImageDraw
 from .models import *
+from os import path as op
+from os import listdir
 
 
 class BadgeImageGenerator:
-
     def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None):
+
         # Generate crew badge
         if badge_type is BadgeType.Crew:
             if crew_info is not None and photo is not None:
                 return self.generate_crew_badge(ribbon_color, crew_info, photo)
+
         # Generate blank badge
         if badge_type is BadgeType.Blank:
             if text is not None:
@@ -34,11 +37,12 @@ class BadgeImageGenerator:
         template.paste(ribbon_image, ribbon_image)
 
         text_addition = ImageDraw.Draw(template)
-        text_addition.text((self._center_text(template, font, text), 500), text, font=font)
+        text_addition.text((self._center_text_coord(template, font, text), 500), text, font=font)
+        text_addition.text((20, 20), "#", font=font)
 
         return template
 
-    def _center_text(self, image, font, text):
+    def _center_text_coord(self, image, font, text):
         base_w, base_h = image.size
         text_w, text_h = font.getsize(text)
         return (base_w - text_w)/2
@@ -52,21 +56,26 @@ class BadgeImageGenerator:
         text_addition.text((412, 384), crew_info.name, font=font, fill=0)
         text_addition.text((412, 424), crew_info.nick, font=font, fill=0)
         text_addition.text((412, 464), crew_info.position, font=font, fill=0)
-        text_addition.text((self._center_text(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
+        text_addition.text(
+            (self._center_text_coord(base_image, font, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
-        if badge_type is BadgeType.Crew:
-            if ribbon_color is BadgeRibbonColor.Black:
-                return Image.open('resources/crewtemplates/layer_sidebar_black.png').convert("RGBA")
-            if ribbon_color is BadgeRibbonColor.Blue:
-                return Image.open('resources/crewtemplates/layer_sidebar_blue.png').convert("RGBA")
-            if ribbon_color is BadgeRibbonColor.Red:
-                return Image.open('resources/crewtemplates/layer_sidebar_blue.png').convert("RGBA")
+        base_path = "resources"
+        ribbons_folder, badge_folder = op.join(base_path, "crewtemplates/ribbons"), op.join(base_path, "templates/ribbons")
+        crew_ribbons = [op.join(ribbons_folder, f) for f in listdir(ribbons_folder)
+                                                    if op.isfile(op.join(ribbons_folder, f))]
+        other_ribbons = [op.join(badge_folder, f) for f in listdir(badge_folder)
+                                                    if op.isfile(op.join(badge_folder, f))]
+
+        if badge_type is BadgeType.Crew and ribbon_color:
+            for ribbon in crew_ribbons:
+                if ribbon_color.lower() in ribbon.lower():
+                    return Image.open(ribbon).convert("RGBA")
+
         if badge_type is BadgeType.Blank:
-            if ribbon_color is BadgeRibbonColor.Black:
-                return Image.open('resources/templates/otherbadge_black.png').convert("RGBA")
-            if ribbon_color is BadgeRibbonColor.Red:
-                return Image.open('resources/templates/otherbadge_red.png').convert("RGBA")
+            for ribbon in other_ribbons:
+                if ribbon_color.lower() in ribbon.lower():
+                    return Image.open(ribbon).convert("RGBA")
 
         raise ValueError('Invalid ribbon color')
 
