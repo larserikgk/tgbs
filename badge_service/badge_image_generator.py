@@ -4,13 +4,14 @@ from .models import *
 
 class BadgeImageGenerator:
 
-    def generate_badge(self, badge_type, ribbon_color, crew_info, photo=None):
+    def generate_badge(self, badge_type, ribbon_color, crew_info, photo=None, text=None):
         # Generate crew badge
         if badge_type is BadgeType.Crew:
             if crew_info is not None and photo is not None:
                 return self.generate_crew_badge(ribbon_color, crew_info, photo)
         if badge_type is BadgeType.Blank:
-            return self.generate_blank_badge(ribbon_color)
+            if text is not None:
+                return self.generate_blank_badge(ribbon_color, text)
 
     def generate_crew_badge(self, ribbon_color, crew_info, photo):
         template = Image.open('resources/crewtemplates/layer_background.png').convert("RGBA")
@@ -25,10 +26,14 @@ class BadgeImageGenerator:
 
         return template
 
-    def generate_blank_badge(self, ribbon_color):
+    def generate_blank_badge(self, ribbon_color, text):
         template = Image.open('resources/templates/blankbadge_template.png').convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
+        font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
         template.paste(ribbon_image, ribbon_image)
+
+        text_addition = ImageDraw.Draw(template)
+        text_addition.text((412, 500), text, font=font)
 
         return template
 

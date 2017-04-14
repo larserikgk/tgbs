@@ -12,5 +12,4 @@ def get_config():
     if parsed_config['client_id'] is None:
         parsed_config['client_id'] = config['DEFAULT'].get('client_id')
 
-
     return parsed_config
