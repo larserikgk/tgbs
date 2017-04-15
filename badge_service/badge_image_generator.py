@@ -12,6 +12,13 @@ class BadgeImageGenerator:
         self._crew_ribbons = config.get('BadgeService', 'crew_ribbon_folder')
         self._other_ribbons = config.get('BadgeService', 'other_ribbon_folder')
         self._wannabe_service = WannabeService(config)
+        self._output_directory = config.get('BadgeService', 'output_directory')
+
+    def save_crew_badge(self, ribbon_color, id):
+        badge = self.generate_crew_badge_with_id(ribbon_color, id)
+        if badge:
+            badge.save(op.join(self._output_directory, id + '.png'))
+            return badge
 
     def generate_crew_badges(self, ribbon_color, crew_info=None):
         users = self._wannabe_service.get_approved_users()
@@ -29,6 +36,12 @@ class BadgeImageGenerator:
             for value in range(start, stop+1):
                 results.append(self._generate_blank_badge(ribbon_color, text, value, invited))
             return results
+
+    def generate_crew_badge_with_id(self, ribbon_color, id):
+        wannabe_json = self._wannabe_service.get_crew_info_json(id)
+        if wannabe_json:
+            crew_info = CrewBadgeInfo(wannabe_json=wannabe_json)
+            return self.generate_crew_badge(ribbon_color, crew_info)
 
     def generate_crew_badge(self, ribbon_color, crew_info):
         template = Image.open(self._crew_template).convert("RGBA")

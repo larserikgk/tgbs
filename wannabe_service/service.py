@@ -10,6 +10,12 @@ class WannabeService:
         self._picture_directory = config.get('WannabeService', 'picture_download_folder')
         self._api = WannabeApi(config)
 
+    def get_crew_info_json(self, crew_id):
+        users = self._api.get_approved_users()
+        for user in users:
+            if crew_id == user['id']:
+                return user
+
     def get_approved_users(self):
         return self._api.get_approved_users()
 
