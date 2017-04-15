@@ -34,4 +34,4 @@ class WannabeApi:
         req = request.Request(url)
         response = request.urlopen(req)
         image_file = io.BytesIO(response.read())
-        return Image.open(image_file)
+        return Image.open(image_file).convert("RGBA")

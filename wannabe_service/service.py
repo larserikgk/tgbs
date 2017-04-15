@@ -1,5 +1,7 @@
 from .api import WannabeApi
 from os import path as op
+from os import listdir
+from PIL import Image
 
 
 class WannabeService:
@@ -18,6 +20,12 @@ class WannabeService:
         return downloaded_pictures
 
     def get_crew_picture(self, crew_id):
+        downloaded_pictures = [op.join(self._picture_directory, f) for f in listdir(self._picture_directory)
+                       if op.isfile(op.join(self._picture_directory, f))]
+        for picture in downloaded_pictures:
+            if crew_id in picture:
+                return Image.open(picture).convert("RGBA")
+
         picture_urls = self._api.get_picture_urls()
         for url in picture_urls:
             if url.rsplit('/', 2)[1] == crew_id:

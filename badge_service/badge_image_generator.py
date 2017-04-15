@@ -2,6 +2,7 @@ from PIL import Image, ImageFont, ImageDraw
 from .models import BadgeType
 from os import path as op
 from os import listdir
+from wannabe_service.service import WannabeService
 
 
 class BadgeImageGenerator:
@@ -10,13 +11,14 @@ class BadgeImageGenerator:
         self._other_template = config.get('BadgeService', 'other_template')
         self._crew_ribbons = config.get('BadgeService', 'crew_ribbon_folder')
         self._other_ribbons = config.get('BadgeService', 'other_ribbon_folder')
+        self._wannabe_service = WannabeService(config)
 
-    def generate_crew_badges(self, badge_type, ribbon_color, crew_info=None, photo=None):
+    def generate_crew_badges(self, badge_type, ribbon_color, crew_info=None):
 
         # Generate crew badge
         if badge_type is BadgeType.Crew:
-            if crew_info and photo:
-                return self.generate_crew_badge(ribbon_color, crew_info, photo)
+            if crew_info:
+                return self.generate_crew_badge(ribbon_color, crew_info)
 
     def generate_other_badges(self, ribbon_color, text=None, start=None, stop=None, invited=False):
         if not (start and stop):
@@ -27,14 +29,13 @@ class BadgeImageGenerator:
                 results.append(self._generate_blank_badge(ribbon_color, text, value, invited))
             return results
 
-    def generate_crew_badge(self, ribbon_color, crew_info, photo):
+    def generate_crew_badge(self, ribbon_color, crew_info):
         template = Image.open(self._crew_template).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Crew, ribbon_color)
-
         template.paste(ribbon_image, ribbon_image)
-        if photo is not None:
-            photo = photo.resize((394, 525), Image.ANTIALIAS)
-            template.paste(photo.resize((394, 525), Image.ANTIALIAS), photo)
+        photo = self._wannabe_service.get_crew_picture(crew_info.id)
+        photo = photo.resize((394, 525), Image.ANTIALIAS)
+        template.paste(photo.resize((394, 525), Image.ANTIALIAS), photo)
 
         self._transpose_crew_info(template, crew_info)
 
@@ -50,18 +51,18 @@ class BadgeImageGenerator:
         text_addition = ImageDraw.Draw(template)
 
         if not invited_by:
-            text_addition.text((self._center_text_coord(template, text_font, text), 500), text, font=text_font)
+            text_addition.text((self._center_text(template, text_font, text), 500), text, font=text_font)
         else:
-            text_addition.text((self._center_text_coord(template, invite_font, 'INVITED BY'), 450), 'INVITED BY',
+            text_addition.text((self._center_text(template, invite_font, 'INVITED BY'), 450), 'INVITED BY',
                                font=invite_font)
-            text_addition.text((self._center_text_coord(template, text_font, text), 500), text, font=text_font)
+            text_addition.text((self._center_text(template, text_font, text), 500), text, font=text_font)
 
         if number:
             text_addition.text((20, 20), '#' + str(number), font=text_font, fill=0)
 
         return template
 
-    def _center_text_coord(self, image, font, text):
+    def _center_text(self, image, font, text):
         base_w, base_h = image.size
         text_w, text_h = font.getsize(text)
         return (base_w - text_w)/2
@@ -75,8 +76,8 @@ class BadgeImageGenerator:
         text_addition.text((412, 384), crew_info.name, font=font, fill=0)
         text_addition.text((412, 424), crew_info.nick, font=font, fill=0)
         text_addition.text((412, 464), crew_info.position, font=font, fill=0)
-        text_addition.text(
-            (self._center_text_coord(base_image, font_bold, crew_info.crew), 554), crew_info.crew, font=font_bold)
+        text_addition.text((self._center_text(base_image, font_bold, crew_info.crew), 554), crew_info.crew,
+                           font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
         crew_rib, other_rib = self._crew_ribbons, self._other_ribbons
@@ -94,5 +95,3 @@ class BadgeImageGenerator:
                     return Image.open(ribbon).convert("RGBA")
 
         raise ValueError('Invalid ribbon color')
-
-
