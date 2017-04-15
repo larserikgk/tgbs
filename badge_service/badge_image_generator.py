@@ -1,5 +1,5 @@
 from PIL import Image, ImageFont, ImageDraw
-from .models import BadgeType
+from .models import BadgeType, CrewBadgeInfo
 from os import path as op
 from os import listdir
 from wannabe_service.service import WannabeService
@@ -13,12 +13,13 @@ class BadgeImageGenerator:
         self._other_ribbons = config.get('BadgeService', 'other_ribbon_folder')
         self._wannabe_service = WannabeService(config)
 
-    def generate_crew_badges(self, badge_type, ribbon_color, crew_info=None):
+    def generate_crew_badges(self, ribbon_color, crew_info=None):
+        users = self._wannabe_service.get_approved_users()
+        badges = []
 
-        # Generate crew badge
-        if badge_type is BadgeType.Crew:
-            if crew_info:
-                return self.generate_crew_badge(ribbon_color, crew_info)
+        for user in users:
+            badges.append(self.generate_crew_badge(ribbon_color, CrewBadgeInfo(wannabe_json=user)))
+        return badges
 
     def generate_other_badges(self, ribbon_color, text=None, start=None, stop=None, invited=False):
         if not (start and stop):

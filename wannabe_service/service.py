@@ -10,6 +10,9 @@ class WannabeService:
         self._picture_directory = config.get('WannabeService', 'picture_download_folder')
         self._api = WannabeApi(config)
 
+    def get_approved_users(self):
+        return self._api.get_approved_users()
+
     def get_crew_pictures(self):
         picture_urls = self._api.get_picture_urls()
         downloaded_pictures = {}
