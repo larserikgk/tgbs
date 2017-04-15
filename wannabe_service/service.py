@@ -19,12 +19,13 @@ class WannabeService:
             downloaded_pictures[filename] = self._api.download_and_parse_image(url)
         return downloaded_pictures
 
-    def get_crew_picture(self, crew_id):
-        downloaded_pictures = [op.join(self._picture_directory, f) for f in listdir(self._picture_directory)
-                       if op.isfile(op.join(self._picture_directory, f))]
-        for picture in downloaded_pictures:
-            if crew_id in picture:
-                return Image.open(picture).convert("RGBA")
+    def get_crew_picture(self, crew_id, force_update=False):
+        if not force_update:
+            downloaded_pictures = [op.join(self._picture_directory, f) for f in listdir(self._picture_directory)
+                           if op.isfile(op.join(self._picture_directory, f))]
+            for picture in downloaded_pictures:
+                if crew_id in picture:
+                    return Image.open(picture).convert("RGBA")
 
         picture_urls = self._api.get_picture_urls()
         for url in picture_urls:
