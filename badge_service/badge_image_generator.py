@@ -6,9 +6,12 @@ from os import listdir
 
 class BadgeImageGenerator:
     def __init__(self, config):
-        self._config = config
+        self._crew_template = config.get('BadgeService', 'crew_template')
+        self._other_template = config.get('BadgeService', 'other_template')
+        self._crew_ribbons = config.get('BadgeService', 'crew_ribbon_folder')
+        self._other_ribbons = config.get('BadgeService', 'other_ribbon_folder')
 
-    def generate_badge(self, badge_type, ribbon_color, crew_info=None, photo=None, text=None, number=None):
+    def generate_crew_badges(self, badge_type, ribbon_color, crew_info=None, photo=None):
 
         # Generate crew badge
         if badge_type is BadgeType.Crew:
@@ -25,7 +28,7 @@ class BadgeImageGenerator:
             return results
 
     def generate_crew_badge(self, ribbon_color, crew_info, photo):
-        template = Image.open(self._config['crew_template']).convert("RGBA")
+        template = Image.open(self._crew_template).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Crew, ribbon_color)
 
         template.paste(ribbon_image, ribbon_image)
@@ -38,7 +41,7 @@ class BadgeImageGenerator:
         return template
 
     def _generate_blank_badge(self, ribbon_color, text, number, invited_by=False):
-        template = Image.open(self._config['other_template']).convert("RGBA")
+        template = Image.open(self._other_template).convert("RGBA")
         ribbon_image = self._get_ribbon_image(BadgeType.Blank, ribbon_color)
         invite_font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 40)
         text_font = ImageFont.truetype('resources/fonts/DroidSans-Bold.ttf', 60)
@@ -76,7 +79,7 @@ class BadgeImageGenerator:
             (self._center_text_coord(base_image, font_bold, crew_info.crew), 554), crew_info.crew, font=font_bold)
 
     def _get_ribbon_image(self, badge_type, ribbon_color):
-        crew_rib, other_rib = self._config['crew_ribbon_folder'], self._config['other_ribbon_folder']
+        crew_rib, other_rib = self._crew_ribbons, self._other_ribbons
         crew_ribbons = [op.join(crew_rib, f) for f in listdir(crew_rib) if op.isfile(op.join(crew_rib, f))]
         other_ribbons = [op.join(other_rib, f) for f in listdir(other_rib) if op.isfile(op.join(other_rib, f))]
 
